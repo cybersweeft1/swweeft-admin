@@ -1,82 +1,262 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin - Upload Project</title>
-  <meta charset="UTF-8">
+    <title>Admin Dashboard - Sweeft</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg-grad: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            --glass: rgba(30, 41, 59, 0.7);
+            --accent: #38bdf8;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-grad);
+            color: #f1f5f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Loading Overlay */
+        #loader {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+            cursor: wait;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #334155;
+            border-top: 5px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .container {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        h2 { color: var(--accent); text-align: center; margin-top: 0; }
+
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .btn {
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-blue { background: var(--accent); color: #020617; }
+        .btn-outline { border: 1px solid var(--accent); color: var(--accent); background: transparent; }
+        .btn-red { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+
+        form { display: flex; flex-direction: column; gap: 15px; }
+
+        input, textarea {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--accent); }
+
+        .project-list {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 800px;
+            background: var(--glass);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: rgba(0,0,0,0.3); padding: 12px; text-align: left; color: var(--accent); }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+    </style>
 </head>
 <body>
 
-<h2>Upload Project</h2>
+<div id="loader"><div class="spinner"></div></div>
 
-<form id="projectForm">
-  <input type="text" id="projectName" placeholder="Project Name" required><br><br>
- 
-  <input type="text" id="department" placeholder="Department" required><br><br>
- 
-  <textarea id="description" placeholder="Small Description" required></textarea><br><br>
- 
-  <input type="number" id="price" placeholder="Price" required><br><br>
- 
-  <input type="text" id="fileId" placeholder="Google Drive File ID" required><br><br>
- 
-  <button type="submit">Post Project</button>
-</form>
+<div class="nav-buttons">
+    <button class="btn btn-blue" onclick="toggleView('form')">Upload New</button>
+    <button class="btn btn-outline" onclick="loadProjects()">View All Projects</button>
+    <a href="lgupload.html" class="btn btn-outline" style="grid-column: span 2;">Open LG Upload Panel</a>
+</div>
 
-<hr>
+<div class="container" id="formContainer">
+    <h2>Upload Project</h2>
+    <form id="projectForm">
+        <input type="text" id="projectName" placeholder="Project Name" required>
+        <input type="text" id="department" placeholder="Department" required>
+        <textarea id="description" placeholder="Small Description" required></textarea>
+        <input type="number" id="price" placeholder="Price" required>
+        <input type="text" id="fileId" placeholder="Google Drive File ID" required>
+        <button type="submit" class="btn btn-blue">Post Project</button>
+    </form>
 
-<h2>Delete Project</h2>
-<input type="text" id="deleteId" placeholder="Enter Project ID">
-<button onclick="deleteProject()">Delete</button>
+    <div style="margin: 25px 0; border-top: 1px solid rgba(255,255,255,0.1);"></div>
+
+    <h2>Delete Project</h2>
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="deleteId" style="flex-grow: 1;" placeholder="Enter Project ID">
+        <button onclick="deleteProject()" class="btn btn-red">Delete</button>
+    </div>
+</div>
+
+<div class="project-list" id="listContainer" style="display:none;">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Project Name</th>
+                <th>Dept</th>
+                <th>Price</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="projectTableBody"></tbody>
+    </table>
+</div>
 
 <script>
+    const WEBAPP_URL = "YOUR_WEBAPP_URL"; // Replace with your Executed URL
+    const SPREADSHEET_ID = "YOUR_SPREADSHEET_ID"; // Replace with your Sheet ID
+    const SHEET_NAME = "sweeft projects";
 
-const WEBAPP_URL = "YOUR_WEBAPP_URL";
+    const loader = document.getElementById('loader');
 
-document.getElementById("projectForm").addEventListener("submit", function(e){
-  e.preventDefault();
-
-  fetch(WEBAPP_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "add",
-      projectName: document.getElementById("projectName").value,
-      department: document.getElementById("department").value,
-      description: document.getElementById("description").value,
-      price: document.getElementById("price").value,
-      fileId: document.getElementById("fileId").value
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if(data.success){
-      alert("Project Posted! ID: " + data.id);
-      document.getElementById("projectForm").reset();
-    } else {
-      alert("Error posting project");
+    function showLoading(show) {
+        loader.style.display = show ? 'flex' : 'none';
     }
-  });
-});
 
-function deleteProject(){
-  const id = document.getElementById("deleteId").value;
+    // FIX: Use text/plain to bypass CORS Preflight issues
+    document.getElementById("projectForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        showLoading(true);
 
-  fetch(WEBAPP_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "delete",
-      id: id
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if(data.success){
-      alert("Deleted Successfully");
-    } else {
-      alert("ID not found");
+        const payload = {
+            action: "add",
+            projectName: document.getElementById("projectName").value,
+            department: document.getElementById("department").value,
+            description: document.getElementById("description").value,
+            price: document.getElementById("price").value,
+            fileId: document.getElementById("fileId").value
+        };
+
+        fetch(WEBAPP_URL, {
+            method: "POST",
+            mode: "no-cors", // Crucial for GAS Web Apps
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            // Note: no-cors mode won't return the JSON, 
+            // but we can assume success if no error is thrown
+            alert("Request Sent! Check your sheet in a moment.");
+            document.getElementById("projectForm").reset();
+            showLoading(false);
+        })
+        .catch(err => {
+            alert("Error: " + err);
+            showLoading(false);
+        });
+    });
+
+    function deleteProject(){
+        const id = document.getElementById("deleteId").value;
+        if(!id) return alert("Enter ID");
+        
+        if(!confirm("Delete Project " + id + "?")) return;
+
+        showLoading(true);
+        fetch(WEBAPP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify({ action: "delete", id: id })
+        }).then(() => {
+            alert("Delete request sent.");
+            showLoading(false);
+            document.getElementById("deleteId").value = "";
+        });
     }
-  });
-}
 
+    // TRICK: Get Google Sheet data as JSON without a script
+    async function loadProjects() {
+        showLoading(true);
+        toggleView('list');
+        
+        const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+        
+        try {
+            const resp = await fetch(url);
+            const text = await resp.text();
+            // Remove the google wrapper around the JSON
+            const json = JSON.parse(text.substr(47).slice(0, -2));
+            const rows = json.table.rows;
+            
+            let html = "";
+            rows.forEach(row => {
+                html += `<tr>
+                    <td>${row.c[0]?.v || ''}</td>
+                    <td>${row.c[1]?.v || ''}</td>
+                    <td>${row.c[2]?.v || ''}</td>
+                    <td>$${row.c[4]?.v || ''}</td>
+                    <td><span style="color:var(--success)">${row.c[7]?.v || ''}</span></td>
+                </tr>`;
+            });
+            document.getElementById("projectTableBody").innerHTML = html;
+        } catch (e) {
+            alert("Error loading data. Is the sheet 'Anyone with link can view'?");
+        }
+        showLoading(false);
+    }
+
+    function toggleView(view) {
+        document.getElementById('formContainer').style.display = view === 'form' ? 'block' : 'none';
+        document.getElementById('listContainer').style.display = view === 'list' ? 'block' : 'none';
+    }
 </script>
 
 </body>
