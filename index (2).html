@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Admin Dashboard - Sweeft</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg: #020617;
+            --bg-grad: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            --glass: rgba(30, 41, 59, 0.7);
+            --accent: #38bdf8;
+            --danger: #ef4444;
+            --success: #10b981;
+            --text: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-grad);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- LOADING OVERLAY --- */
+        #loader {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(56, 189, 248, 0.1);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- NOTIFICATIONS --- */
+        #notif-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .notif {
+            min-width: 280px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.4s ease forwards;
+            font-size: 0.9rem;
+        }
+
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .notif.success { border-color: var(--success); color: var(--success); }
+        .notif.error { border-color: var(--danger); color: var(--danger); }
+
+        /* --- CONTAINERS --- */
+        .container {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        h2 { font-weight: 700; letter-spacing: -0.025em; color: var(--accent); text-align: center; margin-top: 0; }
+
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .btn {
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-blue { background: var(--accent); color: #020617; box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
+        .btn-outline { border: 1px solid rgba(56, 189, 248, 0.3); color: var(--accent); background: transparent; }
+        .btn-red { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        form { display: flex; flex-direction: column; gap: 16px; }
+
+        input, textarea, select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 14px;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+            transition: 0.2s;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        select option {
+            background: #0f172a;
+            color: white;
+        }
+
+        input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.1); }
+
+        .project-list {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 900px;
+            background: var(--glass);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: rgba(0,0,0,0.3); padding: 15px; text-align: left; color: var(--accent); font-size: 0.8rem; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div></div>
+<div id="notif-container"></div>
+
+<div class="nav-buttons">
+    <button class="btn btn-blue" onclick="toggleView('form')">Upload Project</button>
+    <button class="btn btn-outline" onclick="loadProjects()">Project Inventory</button>
+    <a href="lgupload.html" class="btn btn-outline" style="grid-column: span 2;">Open LG Upload Panel</a>
+</div>
+
+<div class="container" id="formContainer">
+    <h2>Post New Work</h2>
+    <form id="projectForm">
+        <input type="text" id="projectName" placeholder="Project Name" required>
+        
+        <!-- DEPARTMENT DROPDOWN - All 34 Departments -->
+        <select id="department" required>
+            <option value="" disabled selected>Select Department</option>
+            <option value="Department of Science Laboratory Technology">Department of Science Laboratory Technology</option>
+            <option value="Department of Home and Rural Economics">Department of Home and Rural Economics</option>
+            <option value="Department of Food Technology">Department of Food Technology</option>
+            <option value="Department of Statistics">Department of Statistics</option>
+            <option value="Department of Hospitality Management">Department of Hospitality Management</option>
+            <option value="Department of Computer Science">Department of Computer Science</option>
+            <option value="Department of Agricultural Technology">Department of Agricultural Technology</option>
+            <option value="Department of Horticultural Technology">Department of Horticultural Technology</option>
+            <option value="Department of Fashion Design & Clothing Technology">Department of Fashion Design & Clothing Technology</option>
+            <option value="Department of Printing Technology">Department of Printing Technology</option>
+            <option value="Department of Fine and Applied Arts">Department of Fine and Applied Arts</option>
+            <option value="Department of Business Administration & Management">Department of Business Administration & Management</option>
+            <option value="Department of Public Administration">Department of Public Administration</option>
+            <option value="Department of Office Technology and Management">Department of Office Technology and Management</option>
+            <option value="Department of Marketing">Department of Marketing</option>
+            <option value="Department of Civil Engineering Technology">Department of Civil Engineering Technology</option>
+            <option value="Department of Mechanical Engineering Technology">Department of Mechanical Engineering Technology</option>
+            <option value="Department of Electrical/Electronics Engineering Technology">Department of Electrical/Electronics Engineering Technology</option>
+            <option value="Department of Agricultural and Bio Environmental Engineering Technology">Department of Agricultural and Bio Environmental Engineering Technology</option>
+            <option value="Department of Computer Engineering Technology">Department of Computer Engineering Technology</option>
+            <option value="Department of Chemical Engineering">Department of Chemical Engineering</option>
+            <option value="Department of Architecture">Department of Architecture</option>
+            <option value="Department of Building Technology">Department of Building Technology</option>
+            <option value="Department of Estate Management">Department of Estate Management</option>
+            <option value="Department of Urban and Regional Planning">Department of Urban and Regional Planning</option>
+            <option value="Department of Quantity Surveying">Department of Quantity Surveying</option>
+            <option value="Department of Surveying and Geo-informatics">Department of Surveying and Geo-informatics</option>
+            <option value="Department of Banking and Finance">Department of Banking and Finance</option>
+            <option value="Department of Accountancy">Department of Accountancy</option>
+            <option value="Department of Insurance">Department of Insurance</option>
+            <option value="Department of Natural Science">Department of Natural Science</option>
+            <option value="Department of Social Science">Department of Social Science</option>
+            <option value="Department of Languages">Department of Languages</option>
+            <option value="Department of Mass Communication">Department of Mass Communication</option>
+            <option value="Department of Library and Information Science">Department of Library and Information Science</option>
+        </select>
+        
+        <textarea id="description" placeholder="Short Project Overview" required></textarea>
+        <input type="number" id="price" placeholder="Price (NGN)" value="2500" required>
+        <input type="text" id="fileId" placeholder="Google Drive ID" required>
+        <button type="submit" id="submitBtn" class="btn btn-blue">Post Project</button>
+    </form>
+
+    <div style="margin: 30px 0; border-top: 1px solid rgba(255,255,255,0.1);"></div>
+
+    <h2>Archive Project</h2>
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="deleteId" style="flex-grow: 1;" placeholder="Enter Project ID">
+        <button onclick="deleteProject()" class="btn btn-red">Delete</button>
+    </div>
+</div>
+
+<div class="project-list" id="listContainer" style="display:none;">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Project Name</th>
+                <th>Dept</th>
+                <th>Price</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="projectTableBody"></tbody>
+    </table>
+</div>
+
+<script>
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwkT3pkdpL7PfsIJLFz-iAXj1T_p1IjAlHMBmHMYDwqHEpsEoFR4O5wKuXOXMMKv0MS/exec"; 
+    const SPREADSHEET_ID = "1CdOJ_j-yT7MudoCRd4GFL7bBsKs_wK96ipIStAKO7XY";
+    const SHEET_NAME = "sweeft projects";
+
+    function showLoading(show) {
+        document.getElementById('loader').style.display = show ? 'flex' : 'none';
+    }
+
+    function notify(msg, type = 'success') {
+        const container = document.getElementById('notif-container');
+        const div = document.createElement('div');
+        div.className = `notif ${type}`;
+        div.innerHTML = `<span>${msg}</span>`;
+        container.appendChild(div);
+        setTimeout(() => div.remove(), 4000);
+    }
+
+    async function apiRequest(payload) {
+        showLoading(true);
+        try {
+            const response = await fetch(WEBAPP_URL, {
+                method: "POST",
+                mode: "cors", 
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                notify(payload.action === 'add' ? "Project live with ID: " + result.id : "Project Deleted");
+                if(payload.action === 'add') document.getElementById("projectForm").reset();
+                return result;
+            } else {
+                throw new Error(result.message || "Unknown error occurred");
+            }
+        } catch (error) {
+            notify(error.message, "error");
+            console.error("Upload Error:", error);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    document.getElementById("projectForm").addEventListener("submit", function(e){
+        e.preventDefault();
+        const payload = {
+            action: "add",
+            projectName: document.getElementById("projectName").value,
+            department: document.getElementById("department").value,
+            description: document.getElementById("description").value,
+            price: document.getElementById("price").value,
+            fileId: document.getElementById("fileId").value
+        };
+        apiRequest(payload);
+    });
+
+    function deleteProject(){
+        const id = document.getElementById("deleteId").value;
+        if(!id) return notify("Enter ID first", "error");
+        if(confirm("Permanently delete " + id + "?")) {
+            apiRequest({ action: "delete", id: id });
+            document.getElementById("deleteId").value = "";
+        }
+    }
+
+    async function loadProjects() {
+        showLoading(true);
+        toggleView('list');
+        
+        // FIXED: Removed space after /d/
+        const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+        
+        try {
+            const resp = await fetch(url);
+            const text = await resp.text();
+            const json = JSON.parse(text.substr(47).slice(0, -2));
+            const rows = json.table.rows;
+            
+            let html = "";
+            rows.forEach(row => {
+                html += `<tr>
+                    <td style="color:var(--accent); font-weight:bold;">${row.c[0]?.v || ''}</td>
+                    <td>${row.c[1]?.v || ''}</td>
+                    <td>${row.c[2]?.v || ''}</td>
+                    <td>₦${row.c[4]?.v || '0'}</td>
+                    <td><span style="color:var(--success)">● ${row.c[7]?.v || 'Active'}</span></td>
+                </tr>`;
+            });
+            document.getElementById("projectTableBody").innerHTML = html;
+        } catch (e) {
+            notify("Database unreachable. Ensure sheet is Public.", "error");
+            console.error(e);
+        }
+        showLoading(false);
+    }
+
+    function toggleView(view) {
+        document.getElementById('formContainer').style.display = view === 'form' ? 'block' : 'none';
+        document.getElementById('listContainer').style.display = view === 'list' ? 'block' : 'none';
+    }
+</script>
+
+</body>
+</html>
