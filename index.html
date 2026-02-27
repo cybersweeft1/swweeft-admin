@@ -38,7 +38,7 @@
             justify-content: center;
             align-items: center;
             backdrop-filter: blur(8px);
-            pointer-events: all; /* Block all clicks */
+            pointer-events: all;
         }
 
         .spinner {
@@ -128,7 +128,7 @@
 
         form { display: flex; flex-direction: column; gap: 16px; }
 
-        input, textarea {
+        input, textarea, select {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255,255,255,0.1);
             padding: 14px;
@@ -136,9 +136,29 @@
             color: white;
             outline: none;
             transition: 0.2s;
+            font-family: inherit;
+            font-size: 0.9rem;
         }
 
-        input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.1); }
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+        }
+
+        select option {
+            background: #0f172a;
+            color: white;
+            padding: 10px;
+        }
+
+        input:focus, select:focus, textarea:focus { 
+            border-color: var(--accent); 
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.1); 
+        }
 
         .project-list {
             margin-top: 30px;
@@ -170,7 +190,55 @@
     <h2>Post New Work</h2>
     <form id="projectForm">
         <input type="text" id="projectName" placeholder="Project Name" required>
-        <input type="text" id="department" placeholder="Department (e.g. Design)" required>
+        
+        <!-- Department Dropdown - All 34 Departments -->
+        <select id="department" required>
+            <option value="" disabled selected>Select Department</option>
+            <!-- SCHOOL OF APPLIED SCIENCE AND TECHNOLOGY -->
+            <option value="Department of Science Laboratory Technology">Department of Science Laboratory Technology</option>
+            <option value="Department of Home and Rural Economics">Department of Home and Rural Economics</option>
+            <option value="Department of Food Technology">Department of Food Technology</option>
+            <option value="Department of Statistics">Department of Statistics</option>
+            <option value="Department of Hospitality Management">Department of Hospitality Management</option>
+            <option value="Department of Computer Science">Department of Computer Science</option>
+            <option value="Department of Agricultural Technology">Department of Agricultural Technology</option>
+            <option value="Department of Horticultural Technology">Department of Horticultural Technology</option>
+            <!-- SCHOOL OF ARTS, DESIGN AND PRINTING TECHNOLOGY -->
+            <option value="Department of Fashion Design & Clothing Technology">Department of Fashion Design & Clothing Technology</option>
+            <option value="Department of Printing Technology">Department of Printing Technology</option>
+            <option value="Department of Fine and Applied Arts">Department of Fine and Applied Arts</option>
+            <!-- SCHOOL OF BUSINESS STUDIES -->
+            <option value="Department of Business Administration & Management">Department of Business Administration & Management</option>
+            <option value="Department of Public Administration">Department of Public Administration</option>
+            <option value="Department of Office Technology and Management">Department of Office Technology and Management</option>
+            <option value="Department of Marketing">Department of Marketing</option>
+            <!-- SCHOOL OF ENGINEERING TECHNOLOGY -->
+            <option value="Department of Civil Engineering Technology">Department of Civil Engineering Technology</option>
+            <option value="Department of Mechanical Engineering Technology">Department of Mechanical Engineering Technology</option>
+            <option value="Department of Electrical/Electronics Engineering Technology">Department of Electrical/Electronics Engineering Technology</option>
+            <option value="Department of Agricultural and Bio Environmental Engineering Technology">Department of Agricultural and Bio Environmental Engineering Technology</option>
+            <option value="Department of Computer Engineering Technology">Department of Computer Engineering Technology</option>
+            <option value="Department of Chemical Engineering">Department of Chemical Engineering</option>
+            <!-- SCHOOL OF ENVIRONMENTAL DESIGN AND TECHNOLOGY -->
+            <option value="Department of Architecture">Department of Architecture</option>
+            <option value="Department of Building Technology">Department of Building Technology</option>
+            <option value="Department of Estate Management">Department of Estate Management</option>
+            <option value="Department of Urban and Regional Planning">Department of Urban and Regional Planning</option>
+            <option value="Department of Quantity Surveying">Department of Quantity Surveying</option>
+            <option value="Department of Surveying and Geo-informatics">Department of Surveying and Geo-informatics</option>
+            <!-- SCHOOL OF FINANCIAL STUDIES -->
+            <option value="Department of Banking and Finance">Department of Banking and Finance</option>
+            <option value="Department of Accountancy">Department of Accountancy</option>
+            <option value="Department of Insurance">Department of Insurance</option>
+            <!-- SCHOOL OF GENERAL STUDIES -->
+            <option value="Department of Natural Science">Department of Natural Science</option>
+            <option value="Department of Social Science">Department of Social Science</option>
+            <option value="Department of Languages">Department of Languages</option>
+            <!-- SCHOOL OF INFORMATION TECHNOLOGY -->
+            <option value="Department of Mass Communication">Department of Mass Communication</option>
+            <option value="Department of Library and Information Science">Department of Library and Information Science</option>
+        </select>
+        
         <textarea id="description" placeholder="Short Project Overview" required></textarea>
         <input type="number" id="price" placeholder="Price (NGN)" required>
         <input type="text" id="fileId" placeholder="Google Drive ID" required>
@@ -202,7 +270,7 @@
 </div>
 
 <script>
-    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwkT3pkdpL7PfsIJLFz-iAXj1T_p1IjAlHMBmHMYDwqHEpsEoFR4O5wKuXOXMMKv0MS/exec"; 
+    const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwkT3pkdpL7PfsIJLFz-iAXj1T_p1IjAlHMBmHMYDwqHEpsEoFR4O5wKuXOXMMKv0MS/exec "; 
     const SPREADSHEET_ID = "1CdOJ_j-yT7MudoCRd4GFL7bBsKs_wK96ipIStAKO7XY";
     const SHEET_NAME = "sweeft projects";
 
@@ -219,12 +287,9 @@
         setTimeout(() => div.remove(), 4000);
     }
 
-    // --- CORE LOGIC: FIXED POST ---
     async function apiRequest(payload) {
         showLoading(true);
         try {
-            // We send as text/plain to avoid CORS preflight, 
-            // but Apps Script will still JSON.parse the body.
             const response = await fetch(WEBAPP_URL, {
                 method: "POST",
                 mode: "cors", 
@@ -241,7 +306,6 @@
                 throw new Error(result.message || "Unknown error occurred");
             }
         } catch (error) {
-            // If the script fails or returns an error, we catch it here
             notify(error.message, "error");
             console.error("Upload Error:", error);
         } finally {
@@ -271,11 +335,10 @@
         }
     }
 
-    // --- GET DATA (TRICK) ---
     async function loadProjects() {
         showLoading(true);
         toggleView('list');
-        const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+        const url = `https://docs.google.com/spreadsheets/d/ ${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
         
         try {
             const resp = await fetch(url);
