@@ -1,142 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+  <title>Admin - Upload Project</title>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Final Year Project Store - Cyber Sweeft</title>
-  
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  
-  <!-- Paystack -->
-  <script src="https://js.paystack.co/v2/inline.js"></script>
-  
-  <!-- Config (HIDDEN - add to .gitignore!) -->
-  <script src="config.js"></script>
-  
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Navigation -->
-  <nav>
-    <a href="/" class="logo">CYBER <span>SWEEFT</span></a>
-    <div class="nav-right">
-      <button class="theme-toggle" id="themeBtn">
-        <i class="fas fa-moon"></i>
-      </button>
-    </div>
-  </nav>
 
-  <!-- Main Content -->
-  <div id="mainContent">
-    <div class="container">
-      <!-- Header -->
-      <div class="page-header">
-        <h1>Final Year Project Store</h1>
-        <p>Premium academic resources for all Schools and Departments. ₦2,500 per download. Secure access and instant delivery.</p>
-      </div>
+<h2>Upload Project</h2>
 
-      <!-- Search -->
-      <div class="search-section">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Search by project name, department, school, or keyword...">
-        </div>
-      </div>
+<form id="projectForm">
+  <input type="text" id="projectName" placeholder="Project Name" required><br><br>
+ 
+  <input type="text" id="department" placeholder="Department" required><br><br>
+ 
+  <textarea id="description" placeholder="Small Description" required></textarea><br><br>
+ 
+  <input type="number" id="price" placeholder="Price" required><br><br>
+ 
+  <input type="text" id="fileId" placeholder="Google Drive File ID" required><br><br>
+ 
+  <button type="submit">Post Project</button>
+</form>
 
-      <!-- Filters -->
-      <div class="category-filters" id="categoryFilters">
-        <!-- Filters injected by JS -->
-      </div>
+<hr>
 
-      <!-- Loading -->
-      <div class="loading-container" id="loadingIndicator">
-        <div class="spinner"></div>
-        <p>Loading projects...</p>
-      </div>
+<h2>Delete Project</h2>
+<input type="text" id="deleteId" placeholder="Enter Project ID">
+<button onclick="deleteProject()">Delete</button>
 
-      <!-- Projects Grid -->
-      <div class="projects-grid" id="projectsGrid">
-        <!-- Projects injected by JS -->
-      </div>
-    </div>
-  </div>
+<script>
 
-  <!-- Download Screen -->
-  <div class="download-screen" id="downloadScreen">
-    <div class="download-card">
-      <div class="success-icon">
-        <i class="fas fa-check-circle"></i>
-      </div>
-      <h2>Payment Successful!</h2>
-      <p class="download-project-name" id="downloadProjectTitle"></p>
-      
-      <div class="warning-box">
-        <i class="fas fa-exclamation-triangle"></i>
-        <div>
-          <strong>Important:</strong> Your download has started automatically. 
-          If you leave this page, use the same device to "Download Again" without paying twice.
-        </div>
-      </div>
+const WEBAPP_URL = "YOUR_WEBAPP_URL";
 
-      <div class="download-actions">
-        <button class="retry-btn" onclick="retryDownload()">
-          <i class="fas fa-redo"></i> Download Again
-        </button>
-        <button class="store-btn" onclick="returnToStore()">
-          <i class="fas fa-store"></i> Back to Store
-        </button>
-      </div>
+document.getElementById("projectForm").addEventListener("submit", function(e){
+  e.preventDefault();
 
-      <p class="transaction-ref">
-        Reference: <span id="transactionRef"></span>
-      </p>
-    </div>
-  </div>
+  fetch(WEBAPP_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "add",
+      projectName: document.getElementById("projectName").value,
+      department: document.getElementById("department").value,
+      description: document.getElementById("description").value,
+      price: document.getElementById("price").value,
+      fileId: document.getElementById("fileId").value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.success){
+      alert("Project Posted! ID: " + data.id);
+      document.getElementById("projectForm").reset();
+    } else {
+      alert("Error posting project");
+    }
+  });
+});
 
-  <!-- Purchase Modal -->
-  <div class="modal" id="purchaseModal">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal()">
-        <i class="fas fa-times"></i>
-      </button>
-      <h3>Complete Purchase</h3>
-      <p class="modal-project" id="modalProjectTitle"></p>
-      <p class="modal-price">₦2,500 <span>one-time payment</span></p>
-      
-      <div class="form-group">
-        <label>Email Address (for receipt)</label>
-        <input type="email" id="buyerEmail" placeholder="your@email.com" required>
-      </div>
-      
-      <div class="modal-error" id="modalError"></div>
-      
-      <button class="confirm-btn" id="confirmBuyBtn" onclick="confirmPurchase()">
-        <i class="fas fa-lock"></i> Pay ₦2,500 & Download
-      </button>
-      
-      <p class="modal-note">
-        <i class="fas fa-shield-alt"></i> Secured by Paystack. Instant access after payment.
-      </p>
-    </div>
-  </div>
+function deleteProject(){
+  const id = document.getElementById("deleteId").value;
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-logo">CYBER <span>SWEEFT</span> SERVICES</div>
-    <p class="tagline">"Distance Is Not A Barrier"</p>
-    <div class="security-badge">
-      <i class="fas fa-lock"></i> Secure Payments • Instant Delivery
-    </div>
-  </footer>
+  fetch(WEBAPP_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "delete",
+      id: id
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if(data.success){
+      alert("Deleted Successfully");
+    } else {
+      alert("ID not found");
+    }
+  });
+}
 
-  <!-- Main App Script -->
-  <script src="app.js"></script>
+</script>
+
 </body>
 </html>
