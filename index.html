@@ -182,44 +182,43 @@
     <form id="projectForm">
         <input type="text" id="projectName" placeholder="Project Name" required>
         
-        <!-- DEPARTMENT DROPDOWN - All 34 Departments -->
         <select id="department" required>
             <option value="" disabled selected>Select Department</option>
-            <option value="Department of Science Laboratory Technology">Department of Science Laboratory Technology</option>
-            <option value="Department of Home and Rural Economics">Department of Home and Rural Economics</option>
-            <option value="Department of Food Technology">Department of Food Technology</option>
-            <option value="Department of Statistics">Department of Statistics</option>
-            <option value="Department of Hospitality Management">Department of Hospitality Management</option>
-            <option value="Department of Computer Science">Department of Computer Science</option>
-            <option value="Department of Agricultural Technology">Department of Agricultural Technology</option>
-            <option value="Department of Horticultural Technology">Department of Horticultural Technology</option>
-            <option value="Department of Fashion Design & Clothing Technology">Department of Fashion Design & Clothing Technology</option>
-            <option value="Department of Printing Technology">Department of Printing Technology</option>
-            <option value="Department of Fine and Applied Arts">Department of Fine and Applied Arts</option>
-            <option value="Department of Business Administration & Management">Department of Business Administration & Management</option>
-            <option value="Department of Public Administration">Department of Public Administration</option>
-            <option value="Department of Office Technology and Management">Department of Office Technology and Management</option>
-            <option value="Department of Marketing">Department of Marketing</option>
-            <option value="Department of Civil Engineering Technology">Department of Civil Engineering Technology</option>
-            <option value="Department of Mechanical Engineering Technology">Department of Mechanical Engineering Technology</option>
-            <option value="Department of Electrical/Electronics Engineering Technology">Department of Electrical/Electronics Engineering Technology</option>
-            <option value="Department of Agricultural and Bio Environmental Engineering Technology">Department of Agricultural and Bio Environmental Engineering Technology</option>
-            <option value="Department of Computer Engineering Technology">Department of Computer Engineering Technology</option>
-            <option value="Department of Chemical Engineering">Department of Chemical Engineering</option>
-            <option value="Department of Architecture">Department of Architecture</option>
-            <option value="Department of Building Technology">Department of Building Technology</option>
-            <option value="Department of Estate Management">Department of Estate Management</option>
-            <option value="Department of Urban and Regional Planning">Department of Urban and Regional Planning</option>
-            <option value="Department of Quantity Surveying">Department of Quantity Surveying</option>
-            <option value="Department of Surveying and Geo-informatics">Department of Surveying and Geo-informatics</option>
-            <option value="Department of Banking and Finance">Department of Banking and Finance</option>
-            <option value="Department of Accountancy">Department of Accountancy</option>
-            <option value="Department of Insurance">Department of Insurance</option>
-            <option value="Department of Natural Science">Department of Natural Science</option>
-            <option value="Department of Social Science">Department of Social Science</option>
-            <option value="Department of Languages">Department of Languages</option>
-            <option value="Department of Mass Communication">Department of Mass Communication</option>
-            <option value="Department of Library and Information Science">Department of Library and Information Science</option>
+            <option value="Accountancy">Accountancy</option>
+            <option value="Agricultural and Bio Environmental Engineering Technology">Agricultural and Bio Environmental Engineering Technology</option>
+            <option value="Agricultural Technology">Agricultural Technology</option>
+            <option value="Architecture">Architecture</option>
+            <option value="Banking and Finance">Banking and Finance</option>
+            <option value="Building Technology">Building Technology</option>
+            <option value="Business Administration & Management">Business Administration & Management</option>
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Civil Engineering Technology">Civil Engineering Technology</option>
+            <option value="Computer Engineering Technology">Computer Engineering Technology</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Electrical/Electronics Engineering Technology">Electrical/Electronics Engineering Technology</option>
+            <option value="Estate Management">Estate Management</option>
+            <option value="Fashion Design & Clothing Technology">Fashion Design & Clothing Technology</option>
+            <option value="Fine and Applied Arts">Fine and Applied Arts</option>
+            <option value="Food Technology">Food Technology</option>
+            <option value="Home and Rural Economics">Home and Rural Economics</option>
+            <option value="Horticultural Technology">Horticultural Technology</option>
+            <option value="Hospitality Management">Hospitality Management</option>
+            <option value="Insurance">Insurance</option>
+            <option value="Languages">Languages</option>
+            <option value="Library and Information Science">Library and Information Science</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Mass Communication">Mass Communication</option>
+            <option value="Mechanical Engineering Technology">Mechanical Engineering Technology</option>
+            <option value="Natural Science">Natural Science</option>
+            <option value="Office Technology and Management">Office Technology and Management</option>
+            <option value="Printing Technology">Printing Technology</option>
+            <option value="Public Administration">Public Administration</option>
+            <option value="Quantity Surveying">Quantity Surveying</option>
+            <option value="Science Laboratory Technology">Science Laboratory Technology</option>
+            <option value="Social Science">Social Science</option>
+            <option value="Statistics">Statistics</option>
+            <option value="Surveying and Geo-informatics">Surveying and Geo-informatics</option>
+            <option value="Urban and Regional Planning">Urban and Regional Planning</option>
         </select>
         
         <textarea id="description" placeholder="Short Project Overview" required></textarea>
@@ -322,7 +321,6 @@
         showLoading(true);
         toggleView('list');
         
-        // FIXED: Removed space after /d/
         const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
         
         try {
